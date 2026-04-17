@@ -77,21 +77,48 @@ impl MenuChoice {
         let path = input.trim().to_lowercase();
         
         env::set_current_dir(&path)?;
-        self.dir_choice(path.to_string())
+        self.dir_choice(&path.to_string())
     }
 //
-    fn dir_choice(&self, selection: String) -> io::Result<()> {
+    fn dir_choice(&self, selection: &String) -> io::Result<()> {
         
-        println!("Current Directory: {}", selection);
+        println!("Current Directory: {}", &selection);
         stdout().flush()?;
-
-        self.folder_contents(selection)
+    
+        let mut input: String = String::new();
+        
+        println!("View Directory Contents?");
+        
+        io::stdin()
+            .read_line(&mut input)?;
+        loop {
+            match input.trim() {
+            
+                "" => {
+                    self.folder_contents(selection)?;
+                    break Ok(());
+                }
+            
+                "n" => break Ok(()),
+            
+                _ => {
+                    println!("Unknown Command");
+                    continue;
+                }
+            };
+        }
     }
 //
 
     fn help(&self) -> io::Result<()> {
 
         println!("Welcome to the Help Screen!\n");
+        println!("Dir - By typing Dir, you will receive a prompt to choose a directory.\n
+        When using Dir please use the full expression e.g < {{/home/user/Desktop}} > \n
+        Clean - Cleans Chosen Dir\n
+        Remove - Removes Chosen Dir\n
+        ");
+         
         stdout().flush()
 
     }
@@ -102,7 +129,9 @@ impl MenuChoice {
         stdout().flush()
 
     }
-    fn folder_contents(&self, folder: String) -> io::Result<()> {
+    fn folder_contents(&self, folder: &String) -> io::Result<()> {
+
+
         let entries = fs::read_dir(folder)?;
         for entry in entries {
             if let Ok(entry) = entry {
